@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "HMS-Net Core Module"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "HMS-Net Entry Ability"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "HMS-Net"
+    }
+  ]
+}
