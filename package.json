@@ -1,0 +1,11 @@
+{
+  "name": "hms-net",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "hvigorw assembleHap"
+  },
+  "dependencies": {
+    "@ohos/hvigor": "4.0.2",
+    "@ohos/hvigor-ohos-plugin": "4.0.2"
+  }
+}
