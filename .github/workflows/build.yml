@@ -1,0 +1,56 @@
+name: Build HMS-Net Release
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-hms:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup OpenHarmony NDK
+        run: |
+          mkdir -p $HOME/ohos-ndk
+          curl -LO https://github.com/hasan-yavuz/ohos-sdk/releases/download/v4.1/native-linux-x64-4.1.0.4.zip
+          unzip -q native-linux-x64-4.1.0.4.zip -d $HOME/ohos-ndk/
+
+      - name: Compile Go Core
+        env:
+          CC: /home/runner/ohos-ndk/native/llvm/bin/clang
+          CGO_ENABLED: 1
+          GOOS: linux
+          GOARCH: arm64
+          CGO_CFLAGS: "--target=aarch64-linux-ohos --sysroot=/home/runner/ohos-ndk/native/sysroot"
+          CGO_LDFLAGS: "--target=aarch64-linux-ohos --sysroot=/home/runner/ohos-ndk/native/sysroot"
+        run: |
+          mkdir -p entry/libs/arm64-v8a
+          cd core
+          go build -buildmode=c-shared -o ../entry/libs/arm64-v8a/libhmsnet_core.so engine.go
+
+      - name: Build HAP
+        run: |
+          npm install
+          npm install -g @ohos/hvigor-cli
+          chmod +x ./hvigorw || true
+          npx hvigorw --mode module -p module=entry@default -p product=default assembleHap --no-daemon
+
+      - name: Upload HAP
+        uses: actions/upload-artifact@v4
+        with:
+          name: HMS-Net-Package
+          path: entry/build/default/outputs/default/*.hap
